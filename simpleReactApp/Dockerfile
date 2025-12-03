@@ -2,19 +2,25 @@
 FROM node:16-alpine as build
 
 WORKDIR /app
+
+# Copiamos los ficheros de configuracion
 COPY package*.json ./
+COPY .env* ./
+
 RUN npm install
 COPY . .
-
-# El argumento se puede sobreescribir durante el build
-ARG REACT_APP_API_URL=http://localhost:3000
-ENV REACT_APP_API_URL=$REACT_APP_API_URL
 
 RUN npm run build
 
 # Production stage
 FROM nginx:alpine
+
 COPY --from=build /app/build /usr/share/nginx/html
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+# Argument to select nginx config (development or production)
+# ARG NGINX_ENV=production
+# Copy the appropriate nginx config based on environment
+COPY nginx.conf.${NGINX_ENV} /etc/nginx/conf.d/default.conf
+
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
