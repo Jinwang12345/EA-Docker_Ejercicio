@@ -19,7 +19,10 @@ services:
       - backend-network
 
   frontend:
-    build: ./simpleReactApp
+    build:
+      context: ./simpleReactApp
+      args:
+        NGINX_ENV: development
     ports:
       - "80:80"
     depends_on:
